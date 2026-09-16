@@ -89,26 +89,26 @@ public final class NabzApiClient {
     }
 
     public void get(String url, JsonCallback cb) {
-        enqueue(client.newCall(base(url).get()), cb, url, "GET", null);
+        enqueue(client.newCall(base(url).get().build()), cb, url, "GET", null);
     }
 
     public void delete(String url, JsonCallback cb) {
-        enqueue(client.newCall(base(url).delete()), cb, url, "DELETE", null);
+        enqueue(client.newCall(base(url).delete().build()), cb, url, "DELETE", null);
     }
 
     public void post(String url, JSONObject body, JsonCallback cb) {
         RequestBody rb = RequestBody.create(body.toString(), MediaType.parse("application/json; charset=utf-8"));
-        enqueue(client.newCall(base(url).post(rb)), cb, url, "POST", body);
+        enqueue(client.newCall(base(url).post(rb).build()), cb, url, "POST", body);
     }
 
     public void put(String url, JSONObject body, JsonCallback cb) {
         RequestBody rb = RequestBody.create(body.toString(), MediaType.parse("application/json; charset=utf-8"));
-        enqueue(client.newCall(base(url).put(rb)), cb, url, "PUT", body);
+        enqueue(client.newCall(base(url).put(rb).build()), cb, url, "PUT", body);
     }
 
     public void patch(String url, JSONObject body, JsonCallback cb) {
         RequestBody rb = RequestBody.create(body.toString(), MediaType.parse("application/json; charset=utf-8"));
-        enqueue(client.newCall(base(url).patch(rb)), cb, url, "PATCH", body);
+        enqueue(client.newCall(base(url).patch(rb).build()), cb, url, "PATCH", body);
     }
 
     public OkHttpClient raw() {
