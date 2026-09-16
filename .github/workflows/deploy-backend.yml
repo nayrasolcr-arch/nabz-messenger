@@ -33,7 +33,7 @@ jobs:
       - name: Test before deploy
         run: npx vitest run
 
-      - name: Apply D1 migrations (safe: only pending)
+      - name: "Apply D1 migrations (safe: only pending)"
         run: npx wrangler d1 migrations apply nabz-db --remote
 
       - name: Deploy Worker
