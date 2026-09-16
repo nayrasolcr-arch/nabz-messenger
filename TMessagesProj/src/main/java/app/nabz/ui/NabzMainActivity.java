@@ -132,8 +132,6 @@ public class NabzMainActivity extends Activity {
             intent.putExtra("conv_title", row.title);
             startActivity(intent);
         });
-        root.addView(listView, new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f));
 
         emptyView = new TextView(this);
         emptyView.setText("هنوز گفتگویی ندارید.\nبا «گفتگوی جدید» شروع کنید.");

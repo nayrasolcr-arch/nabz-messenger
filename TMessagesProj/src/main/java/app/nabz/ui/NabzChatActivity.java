@@ -863,7 +863,9 @@ public class NabzChatActivity extends Activity {
                 body.setText(m.body);
                 body.setTextColor(NabzUi.TEXT);
                 body.setTextSize(15);
-                body.setMaxWidth((int) (parent.getWidth() * 0.72f));
+                if (parent.getWidth() > 0) {
+                    body.setMaxWidth((int) (parent.getWidth() * 0.72f));
+                }
                 bubble.addView(body);
             }
 
