@@ -1,0 +1,57 @@
+name: Deploy Backend
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [master, main]
+    paths:
+      - "backend/**"
+      - ".github/workflows/deploy-backend.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Deploy Workers + apply D1 migrations
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+
+      - name: Test before deploy
+        run: npx vitest run
+
+      - name: Apply D1 migrations (safe: only pending)
+        run: npx wrangler d1 migrations apply nabz-db --remote
+
+      - name: Deploy Worker
+        id: deploy
+        run: |
+          out=$(npx wrangler deploy 2>&1)
+          echo "$out"
+          url=$(echo "$out" | rg -o 'https://[a-z0-9.-]+\.workers\.dev' | head -1 || true)
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+
+      - name: Smoke test /health
+        if: steps.deploy.outputs.url != ''
+        run: |
+          set -e
+          code="none"
+          for i in 1 2 3 4 5; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' "${{ steps.deploy.outputs.url }}/health" || true)
+            [ "$code" = "200" ] && break || sleep 5
+          done
+          echo "health check status: $code"
+          [ "$code" = "200" ]
