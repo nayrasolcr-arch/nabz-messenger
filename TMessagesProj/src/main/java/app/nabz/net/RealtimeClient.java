@@ -83,7 +83,11 @@ public final class RealtimeClient {
         socket = client.newWebSocket(req, new WebSocketListener() {
             @Override public void onOpen(WebSocket webSocket, Response response) {
                 attempt = 0;
-                webSocket.send(encodeSafe(new JSONObject().put("t", "auth").put("token", token)));
+                try {
+                    webSocket.send(new JSONObject().put("t", "auth").put("token", token).toString());
+                } catch (Exception e) {
+                    Log.w(TAG, "auth send failed", e);
+                }
                 main.post(() -> {
                     if (listener != null) listener.onConnectionStateChange(true);
                 });
