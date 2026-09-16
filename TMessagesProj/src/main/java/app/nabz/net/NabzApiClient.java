@@ -89,26 +89,26 @@ public final class NabzApiClient {
     }
 
     public void get(String url, JsonCallback cb) {
-        enqueue(base(url).get(), cb, url, "GET", null);
+        enqueue(client.newCall(base(url).get()), cb, url, "GET", null);
     }
 
     public void delete(String url, JsonCallback cb) {
-        enqueue(base(url).delete(), cb, url, "DELETE", null);
+        enqueue(client.newCall(base(url).delete()), cb, url, "DELETE", null);
     }
 
     public void post(String url, JSONObject body, JsonCallback cb) {
         RequestBody rb = RequestBody.create(body.toString(), MediaType.parse("application/json; charset=utf-8"));
-        enqueue(base(url).post(rb), cb, url, "POST", body);
+        enqueue(client.newCall(base(url).post(rb)), cb, url, "POST", body);
     }
 
     public void put(String url, JSONObject body, JsonCallback cb) {
         RequestBody rb = RequestBody.create(body.toString(), MediaType.parse("application/json; charset=utf-8"));
-        enqueue(base(url).put(rb), cb, url, "PUT", body);
+        enqueue(client.newCall(base(url).put(rb)), cb, url, "PUT", body);
     }
 
     public void patch(String url, JSONObject body, JsonCallback cb) {
         RequestBody rb = RequestBody.create(body.toString(), MediaType.parse("application/json; charset=utf-8"));
-        enqueue(base(url).patch(rb), cb, url, "PATCH", body);
+        enqueue(client.newCall(base(url).patch(rb)), cb, url, "PATCH", body);
     }
 
     public OkHttpClient raw() {
@@ -119,7 +119,7 @@ public final class NabzApiClient {
         call.enqueue(new Callback() {
             @Override public void onFailure(Call c, IOException e) {
                 // offline: surface as NETWORK code so repositories can queue/retry
-                main.post(() -> cb.error(new ApiException(0, "NETWORK", String.valueOf(e.getMessage()))));
+                main.post(() -> cb.onError(new ApiException(0, "NETWORK", String.valueOf(e.getMessage()))));
             }
 
             @Override public void onResponse(Call c, Response resp) throws IOException {
@@ -129,11 +129,11 @@ public final class NabzApiClient {
 
                 if (status == 401 && tokenProvider != null && tokenProvider.refreshIfNeeded(status)) {
                     // token rotated; retry once with the fresh token
-                    Call retry = client.newCall(base(url)
-                            .method(method, retryBody != null
+                    Request.Builder rb2 = base(url).method(method,
+                            retryBody != null
                                     ? RequestBody.create(retryBody.toString(), MediaType.parse("application/json; charset=utf-8"))
-                                    : null));
-                    enqueue(retry, cb, url, method, retryBody);
+                                    : null);
+                    enqueue(client.newCall(rb2.build()), cb, url, method, retryBody);
                     return;
                 }
 
@@ -142,12 +142,13 @@ public final class NabzApiClient {
                 catch (Exception parse) { json = new JSONObject(); }
 
                 if (status >= 200 && status < 300) {
-                    main.post(() -> cb.onSuccess(json));
+                    final JSONObject okJson = json;
+                    main.post(() -> cb.onSuccess(okJson));
                 } else {
                     JSONObject err = json.optJSONObject("error");
                     String code = err != null ? err.optString("code", "ERROR") : "HTTP_" + status;
                     String msg = err != null ? err.optString("message", "Request failed") : "HTTP " + status;
-                    main.post(() -> cb.error(new ApiException(status, code, msg)));
+                    main.post(() -> cb.onError(new ApiException(status, code, msg)));
                 }
             }
         });

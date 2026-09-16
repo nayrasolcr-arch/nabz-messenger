@@ -99,7 +99,14 @@ public final class NabzCallClient implements RealtimeClient.Listener {
 
     /** Called by the call UI after the callee accepts (REST accept already done). */
     public void onAcceptedLocally() {
-        CallRepository.get().iceServers(data -> preparePeerConnection(data, false));
+        CallRepository.get().iceServers(new NabzApiClient.JsonCallback() {
+            @Override public void onSuccess(JSONObject data) {
+                preparePeerConnection(data, false);
+            }
+            @Override public void onError(NabzApiClient.ApiException error) {
+                teardown();
+            }
+        });
     }
 
     private void preparePeerConnection(JSONObject iceServersData, boolean isCaller) {
@@ -237,7 +244,14 @@ public final class NabzCallClient implements RealtimeClient.Listener {
                 break;
             }
             case "call.accepted": {
-                CallRepository.get().iceServers(data -> preparePeerConnection(data, true));
+                CallRepository.get().iceServers(new NabzApiClient.JsonCallback() {
+                    @Override public void onSuccess(JSONObject data) {
+                        preparePeerConnection(data, true);
+                    }
+                    @Override public void onError(NabzApiClient.ApiException error) {
+                        teardown();
+                    }
+                });
                 break;
             }
             case "call.rejected": {
@@ -254,17 +268,22 @@ public final class NabzCallClient implements RealtimeClient.Listener {
                 if (data == null) return;
                 String kind = data.optString("type");
                 if ("offer".equals(kind)) {
-                    CallRepository.get().iceServers(ice -> {
-                        preparePeerConnection(ice, false);
-                        if (data.has("sdp")) {
-                            try {
-                                setRemoteAndAnswer(new JSONObject().put("sdp", data.getString("sdp")));
-                            } catch (Exception ignored) {}
+                    CallRepository.get().iceServers(new NabzApiClient.JsonCallback() {
+                        @Override public void onSuccess(JSONObject ice) {
+                            preparePeerConnection(ice, false);
+                            if (data.has("sdp")) {
+                                try {
+                                    setRemoteAndAnswer(new JSONObject().put("sdp", data.getString("sdp")));
+                                } catch (Exception ignored) {}
+                            }
+                        }
+                        @Override public void onError(NabzApiClient.ApiException error) {
+                            // cannot build a connection without ICE config
                         }
                     });
                 } else if ("answer".equals(kind) && peerConnection != null) {
                     try {
-                        peerConnection.setRemoteDescription(new SdpAdapter("remote"),
+                        peerConnection.setRemoteDescription(new SdpAdapter(null),
                                 new SessionDescription(SessionDescription.Type.ANSWER, data.getString("sdp")));
                     } catch (Exception ignored) {}
                 } else if ("candidate".equals(kind) && peerConnection != null) {
