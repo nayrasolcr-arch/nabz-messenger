@@ -44,10 +44,10 @@ jobs:
 
       - name: Configure ccache
         run: |
-          ccache --set-config=max_size=1G
-          ccache --set-config=compilercheck=content
-          ccache --set-config=sloppiness=file_stat_matches,pch_defines,time_macros
-          ccache -z
+          ccache --set-config=max_size=1G || true
+          ccache --set-config=compiler_check=content || true
+          ccache --set-config=sloppiness=file_stat_matches,pch_defines,time_macros || true
+          ccache -z || true
 
       - name: Build debug APK (arm64 only, faster)
         env:
