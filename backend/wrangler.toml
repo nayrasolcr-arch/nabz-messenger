@@ -1,0 +1,44 @@
+name = "nabz-backend"
+main = "src/index.ts"
+compatibility_date = "2025-09-01"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+ENVIRONMENT = "production"
+PBKDF2_ITERATIONS = "50000"
+SESSION_TTL_HOURS = "24"
+REFRESH_TTL_DAYS = "30"
+MAX_MESSAGE_LENGTH = "4096"
+MAX_ATTACHMENT_BYTES = "24000000"
+ALLOW_REGISTRATION = "true"
+MAX_GROUP_MEMBERS = "50"
+AI_MODEL = "@cf/meta/llama-3.1-8b-instruct"
+STUN_URLS = "stun:stun.l.google.com:19302,stun:stun1.l.google.com:19302,stun:global.stun.twilio.com:3478"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "nabz-db"
+database_id = "PLACEHOLDER_SET_BY_DEPLOY"
+migrations_dir = "migrations"
+
+[[kv_namespaces]]
+binding = "ATTACHMENTS"
+id = "PLACEHOLDER_SET_BY_DEPLOY"
+
+[[durable_objects.bindings]]
+name = "REALTIME_HUB"
+class_name = "RealtimeHub"
+
+[[durable_objects.bindings]]
+name = "RATE_LIMITER"
+class_name = "RateLimiter"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["RealtimeHub", "RateLimiter"]
+
+[ai]
+binding = "AI"
+
+[observability]
+enabled = true
