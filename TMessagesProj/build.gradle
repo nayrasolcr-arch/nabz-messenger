@@ -39,6 +39,9 @@ dependencies {
     implementation 'androidx.interpolator:interpolator:1.0.0'
     implementation 'androidx.biometric:biometric:1.1.0'
 
+    // Nabz: HTTP + WebSocket client for the Nabz backend (Cloudflare Workers)
+    implementation 'com.squareup.okhttp3:okhttp:4.12.0'
+
     implementation 'com.google.android.gms:play-services-cast-framework:21.4.0'
     implementation "androidx.mediarouter:mediarouter:1.7.0"
     implementation 'com.google.zxing:core:3.5.4'
