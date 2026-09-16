@@ -44,7 +44,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: nabz-debug-apk
-          path: TMessagesProj_App/build/outputs/apk/debug/*.apk
+          path: TMessagesProj_App/build/outputs/apk/**/debug/*.apk
           if-no-files-found: error
 
       - name: Upload release APK artifact
@@ -52,5 +52,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: nabz-release-apk
-          path: TMessagesProj_App/build/outputs/apk/release/*.apk
+          path: TMessagesProj_App/build/outputs/apk/**/release/*.apk
           if-no-files-found: warn
