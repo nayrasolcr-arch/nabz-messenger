@@ -9,6 +9,7 @@ export default defineConfig({
       miniflare: {
         compatibilityDate: '2025-09-01',
         compatibilityFlags: ['nodejs_compat'],
+        kvNamespaces: ['ATTACHMENTS'],
         bindings: {
           // test-friendly overrides (per-user limits stay low for rate-limit tests)
           REGISTER_RL_LIMIT: '1000',

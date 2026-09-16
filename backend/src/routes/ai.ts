@@ -72,7 +72,8 @@ aiRoutes.post('/chat', async (c) => {
   } catch (e) {
     const msg = String((e as Error).message ?? '');
     if (msg === 'AI_NOT_CONFIGURED') throw badRequest('AI_NOT_CONFIGURED', 'No AI provider is configured on the server');
-    throw badRequest('AI_PROVIDER_ERROR', 'The AI provider failed to respond');
+    // Surface the provider message (no secrets involved) so misconfigurations are debuggable.
+    throw badRequest('AI_PROVIDER_ERROR', `The AI provider failed: ${msg.slice(0, 300)}`);
   }
 
   const assistantMsgId = crypto.randomUUID();

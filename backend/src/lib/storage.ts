@@ -2,6 +2,7 @@
 // Free-tier default: Workers KV (25MB values, 1GB free) - good for a 20-user messenger.
 // Future: add an R2 binding named ATTACHMENTS_R2 in wrangler.toml and set
 // STORAGE_PROVIDER=r2; the interface stays identical so the switch is non-breaking.
+import { ApiError } from './errors';
 
 export interface StoredObject {
   data: ArrayBuffer;
@@ -44,14 +45,27 @@ class R2StorageProvider implements StorageProvider {
   }
 }
 
-export function getStorage(env: Env): StorageProvider {
+/**
+ * Returns the configured provider, or null when no storage binding exists
+ * (e.g. token lacked KV:Edit at provision time). Routes surface a clear 503.
+ */
+export function getStorageOrNull(env: Env): StorageProvider | null {
   const anyEnv = env as unknown as { ATTACHMENTS_R2?: R2Bucket; STORAGE_PROVIDER?: string };
   if (anyEnv.STORAGE_PROVIDER === 'r2' && anyEnv.ATTACHMENTS_R2) {
     return new R2StorageProvider(anyEnv.ATTACHMENTS_R2);
   }
   if (env.ATTACHMENTS) return new KvStorageProvider(env.ATTACHMENTS);
   if (anyEnv.ATTACHMENTS_R2) return new R2StorageProvider(anyEnv.ATTACHMENTS_R2);
-  throw new Error('STORAGE_NOT_CONFIGURED');
+  return null;
+}
+
+export function getStorage(env: Env): StorageProvider {
+  const provider = getStorageOrNull(env);
+  if (!provider) {
+    throw new ApiError(503, 'STORAGE_NOT_CONFIGURED',
+      'Attachment storage is not configured on this deployment (KV/R2 binding missing)');
+  }
+  return provider;
 }
 
 export function storageKeyFor(attachmentId: string): string {

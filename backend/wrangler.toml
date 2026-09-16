@@ -12,18 +12,22 @@ MAX_MESSAGE_LENGTH = "4096"
 MAX_ATTACHMENT_BYTES = "24000000"
 ALLOW_REGISTRATION = "true"
 MAX_GROUP_MEMBERS = "50"
-AI_MODEL = "@cf/meta/llama-3.1-8b-instruct"
+AI_MODEL = "@cf/meta/llama-3.1-8b-instruct-fp8"
 STUN_URLS = "stun:stun.l.google.com:19302,stun:stun1.l.google.com:19302,stun:global.stun.twilio.com:3478"
 
 [[d1_databases]]
 binding = "DB"
 database_name = "nabz-db"
-database_id = "PLACEHOLDER_SET_BY_DEPLOY"
+database_id = "a8a27ce1-aab1-41c0-8503-9a006f617c3b"
 migrations_dir = "migrations"
 
-[[kv_namespaces]]
-binding = "ATTACHMENTS"
-id = "PLACEHOLDER_SET_BY_DEPLOY"
+# TODO(attachments): uncomment after creating the KV namespace (needs KV:Edit permission):
+#   npx wrangler kv namespace create ATTACHMENTS
+# then replace the id below and redeploy. Attachments endpoints return 503
+# STORAGE_NOT_CONFIGURED until then; all messaging/calls/AI features work.
+# [[kv_namespaces]]
+# binding = "ATTACHMENTS"
+# id = "PLACEHOLDER_SET_BY_DEPLOY"
 
 [[durable_objects.bindings]]
 name = "REALTIME_HUB"
