@@ -440,6 +440,23 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
         flagSecureReason.attach();
 
         super.onCreate(savedInstanceState);
+
+        // Nabz shell: username/password auth + own UI. Telegram's MTProto login
+        // is intentionally unreachable; every launch routes through the Nabz flow.
+        if (!app.nabz.net.AuthRepository.get().installAppSession(getApplicationContext())) {
+            startActivity(new Intent(this, app.nabz.ui.NabzAuthActivity.class));
+        } else {
+            startActivity(new Intent(this, app.nabz.ui.NabzMainActivity.class));
+        }
+        finish();
+        return;
+    }
+
+    private void nabzUnreachableAnchor() {
+        // intentionally empty; keeps the original onCreate body reachable for reference
+    }
+
+    private void nabzOriginalOnCreateTail(Bundle savedInstanceState) {
         if (Build.VERSION.SDK_INT >= 24) {
             AndroidUtilities.isInMultiwindow = isInMultiWindowMode();
         }

@@ -21,13 +21,9 @@ database_name = "nabz-db"
 database_id = "a8a27ce1-aab1-41c0-8503-9a006f617c3b"
 migrations_dir = "migrations"
 
-# TODO(attachments): uncomment after creating the KV namespace (needs KV:Edit permission):
-#   npx wrangler kv namespace create ATTACHMENTS
-# then replace the id below and redeploy. Attachments endpoints return 503
-# STORAGE_NOT_CONFIGURED until then; all messaging/calls/AI features work.
-# [[kv_namespaces]]
-# binding = "ATTACHMENTS"
-# id = "PLACEHOLDER_SET_BY_DEPLOY"
+[[kv_namespaces]]
+binding = "ATTACHMENTS"
+id = "69158694b46142c8a58d7decba42f3a5"
 
 [[durable_objects.bindings]]
 name = "REALTIME_HUB"

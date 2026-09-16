@@ -24,6 +24,11 @@ android {
     compileSdkVersion 36
     buildToolsVersion '36.0.0'
 
+    // Nabz: ABI selection is property-driven so CI can build a single-ABI APK
+    // (much faster) while the default stays the universal fat APK.
+    def nabzAbis = (project.findProperty('nabzAbis') ?: 'armeabi-v7a,arm64-v8a,x86,x86_64')
+            .toString().split(',').collect { it.trim() }
+
     defaultConfig.applicationId = APP_PACKAGE
 
     sourceSets.main.jniLibs.srcDirs = ['../TMessagesProj/jni/']
@@ -111,7 +116,7 @@ android {
     productFlavors {
         bundleAfat {
             ndk {
-                abiFilters "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
+                nabzAbis.each { abiFilters it }
             }
             ext {
                 abiVersionCode = 1
@@ -120,7 +125,7 @@ android {
         }
         bundleAfat_SDK23 {
             ndk {
-                abiFilters "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
+                nabzAbis.each { abiFilters it }
             }
             sourceSets.debug {
                 manifest.srcFile '../TMessagesProj/config/debug/AndroidManifest_SDK23.xml'
@@ -136,7 +141,7 @@ android {
         }
         afat {
             ndk {
-                abiFilters "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
+                nabzAbis.each { abiFilters it }
             }
             sourceSets.debug {
                 manifest.srcFile '../TMessagesProj/config/debug/AndroidManifest_SDK23.xml'

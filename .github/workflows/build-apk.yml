@@ -29,16 +29,42 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
 
-      - name: Install pinned NDK
+      - name: Install pinned NDK + ccache
         run: |
           yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "ndk;27.2.12479018" >/dev/null || true
+          sudo apt-get update -qq && sudo apt-get install -y -qq ccache
 
-      - name: Build debug APK
-        run: ./gradlew :TMessagesProj_App:assembleDebug --stacktrace
+      - name: Cache ccache (native builds)
+        uses: actions/cache@v4
+        with:
+          path: ~/.ccache
+          key: ccache-${{ runner.os }}-afat-arm64-${{ github.sha }}
+          restore-keys: |
+            ccache-${{ runner.os }}-afat-arm64-
+
+      - name: Configure ccache
+        run: |
+          ccache --set-config=max_size=1G
+          ccache --set-config=compilercheck=content
+          ccache --set-config=sloppiness=file_stat_matches,pch_defines,time_macros
+          ccache -z
+
+      - name: Build debug APK (arm64 only, faster)
+        env:
+          NDK_CCACHE: ccache
+          CCACHE_DIR: ~/.ccache
+        run: ./gradlew :TMessagesProj_App:assembleAfatDebug -PnabzAbis=arm64-v8a -PnabzCcache=true --stacktrace
+
+      - name: ccache stats
+        if: always()
+        run: ccache -s || true
 
       - name: Build release APK (unsigned, for tag builds)
         if: startsWith(github.ref, 'refs/tags/')
-        run: ./gradlew :TMessagesProj_App:assembleRelease --stacktrace
+        env:
+          NDK_CCACHE: ccache
+          CCACHE_DIR: ~/.ccache
+        run: ./gradlew :TMessagesProj_App:assembleAfatRelease -PnabzAbis=arm64-v8a -PnabzCcache=true --stacktrace
 
       - name: Upload debug APK artifact
         uses: actions/upload-artifact@v4

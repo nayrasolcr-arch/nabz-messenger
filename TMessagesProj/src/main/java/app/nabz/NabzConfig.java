@@ -12,7 +12,7 @@ public final class NabzConfig {
     private NabzConfig() {}
 
     /** HTTPS base URL of the Nabz backend (versioned API). */
-    public static final String API_BASE_URL = "https://nabz-backend.REPLACE-WORKERS-SUBDOMAIN.workers.dev";
+    public static final String API_BASE_URL = "https://nabz-backend.nayrasolcr-nabz.workers.dev";
 
     /** WebSocket endpoint of the same worker (realtime hub). */
     public static final String WS_URL = API_BASE_URL.replace("https://", "wss://") + "/ws";

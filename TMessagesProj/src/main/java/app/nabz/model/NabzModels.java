@@ -57,6 +57,8 @@ public final class NabzModels {
         public Attachment attachment;
         public long createdAt, editedAt;
         public boolean deleted;
+        /** Raw reactions array: [{emoji, user_ids[]}]; set by the chat UI. */
+        public org.json.JSONArray reactionsJson;
 
         public static Message fromJson(JSONObject o) {
             Message m = new Message();

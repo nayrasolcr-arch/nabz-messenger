@@ -132,6 +132,9 @@ android {
         minSdkVersion 21
         targetSdkVersion 36
 
+        // Nabz: optional ccache launcher for faster CI rebuilds (-PnabzCcache=true)
+        def nabzCcache = project.findProperty('nabzCcache') == 'true'
+
         vectorDrawables.generatedDensities = ['mdpi', 'hdpi', 'xhdpi', 'xxhdpi']
 
         multiDexEnabled true
@@ -140,6 +143,9 @@ android {
             cmake {
                 version '3.22.1'
                 arguments '-DANDROID_STL=c++_static', '-DANDROID_PLATFORM=android-21' //, '-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON'
+                if (nabzCcache) {
+                    arguments '-DCMAKE_C_COMPILER_LAUNCHER=ccache', '-DCMAKE_CXX_COMPILER_LAUNCHER=ccache'
+                }
                 targets 'tmessages.49'
             }
         }

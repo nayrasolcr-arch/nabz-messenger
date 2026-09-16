@@ -28,6 +28,7 @@ public final class AuthRepository {
     private String accessToken, refreshToken;
     private NabzModels.User currentUser;
     private NabzApiClient.TokenProvider provider;
+    private android.content.SharedPreferences store;
 
     private final NabzApiClient api = NabzApiClient.get();
 
@@ -94,6 +95,7 @@ public final class AuthRepository {
                     accessToken = data.optString("access_token");
                     refreshToken = data.optString("refresh_token");
                     currentUser = NabzModels.User.fromJson(data.optJSONObject("user"));
+                    persist();
                     cb.onSession(currentUser, accessToken, refreshToken);
                 }
                 @Override public void onError(NabzApiClient.ApiException error) { cb.onError(error); }
@@ -101,6 +103,52 @@ public final class AuthRepository {
         } catch (Exception e) {
             cb.onError(new NabzApiClient.ApiException(0, "LOCAL", e.getMessage()));
         }
+    }
+
+    /**
+     * Install the token provider + restore a persisted session from
+     * SharedPreferences. Returns true when a session is available after
+     * restore (so callers can gate the app entry point).
+     */
+    public boolean installAppSession(android.content.Context ctx) {
+        install();
+        if (store == null) {
+            store = ctx.getApplicationContext()
+                    .getSharedPreferences("nabz_session", android.content.Context.MODE_PRIVATE);
+        }
+        if (accessToken == null) {
+            String a = store.getString("access", null);
+            String r = store.getString("refresh", null);
+            String u = store.getString("user", null);
+            if (a != null && r != null && !a.isEmpty() && !r.isEmpty()) {
+                restore(a, r, u == null ? "{}" : u);
+            }
+        }
+        return isLoggedIn();
+    }
+
+    /** Persist the current session so the app survives process death. */
+    private void persist() {
+        if (store == null) return;
+        android.content.SharedPreferences.Editor e = store.edit();
+        if (accessToken == null || refreshToken == null) {
+            e.clear();
+        } else {
+            String userJson = "{}";
+            if (currentUser != null) {
+                try {
+                    userJson = new org.json.JSONObject()
+                            .put("id", currentUser.id)
+                            .put("username", currentUser.username)
+                            .put("display_name", currentUser.displayName)
+                            .toString();
+                } catch (Exception ignored) {}
+            }
+            e.putString("access", accessToken);
+            e.putString("refresh", refreshToken);
+            e.putString("user", userJson);
+        }
+        e.apply();
     }
 
     /** Restore a persisted session at app start. */
@@ -151,6 +199,7 @@ public final class AuthRepository {
             resp.close();
             accessToken = data.optString("access_token");
             refreshToken = data.optString("refresh_token");
+            persist();
             return true;
         } catch (Exception e) {
             return false;
@@ -161,5 +210,6 @@ public final class AuthRepository {
         accessToken = null;
         refreshToken = null;
         currentUser = null;
+        if (store != null) store.edit().clear().apply();
     }
 }
