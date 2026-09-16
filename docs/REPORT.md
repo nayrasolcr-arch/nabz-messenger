@@ -71,20 +71,22 @@ REST lifecycle (`ringing→active→ended/missed/rejected` + پیام سیستم
 
 ## ۱۱) APK — کجا و چطور
 
-- build-apk.yml روی GitHub Actions اجرا شد؛ اجرای اول به‌خاطر submoduleها fail شد — **فیکس شد (submodules: recursive) و اجرای دوم در حال اجراست**
-- دریافت: GitHub → Actions → Build APK (روی commit آخر) → artifact **`nabz-debug-apk`**
-- نکته: بعد از deploy شدن backend، مقدار `NabzConfig.API_BASE_URL` را به URL واقعی workers.dev ست کنید و دوباره build بگیرید (الان placeholder دارد)
+- **ساخته شد**: `BUILD SUCCESSFUL in 43m 15s` روی GitHub Actions (ubuntu-latest، NDK 27.2.12479018، submodules کامل)
+- دریافت: GitHub → Actions → Build APK (روی commit `95dd8e4b`) → artifact **`nabz-debug-apk`** (~114MB، شامل `afat/debug/app.apk`)
+- کپی محلی: `download/nabz-debug.apk`
+- نکته: قبل از استفاده‌ی واقعی، `NabzConfig.API_BASE_URL` را به `https://nabz-backend.nayrasolcr-nabz.workers.dev` تغییر دهید و build جدید بگیرید (الان placeholder دارد)
 
 ## ۱۲) وضعیت‌ها
 
 | مورد | وضعیت |
 |------|-------|
-| آخرین commit | `44f95dfa` (branch feature/nabz-v1) |
+| آخرین commit | `95dd8e4b` (branch feature/nabz-v1) |
 | Backend tests | 35/35 ✅ لوکال + ✅ CI |
 | typecheck | ✅ |
 | Live smoke test | ✅ (register/login/conv/message/react/read/IDOR 403/search/AI) |
 | Deployment | ✅ Workers + D1 زنده؛ ⚠️ KV منتظر دسترسی |
-| CI | test.yml ✅ سبز؛ build-apk در حال اجرا؛ deploy-backend آماده (dispatch پس از merge به master) |
+| CI | test.yml ✅ سبز؛ **build-apk.yml ✅ BUILD SUCCESSFUL (43m) — artifact `nabz-debug-apk` (114MB) منتشر و صحت‌سنجی شد**؛ deploy-backend آماده (dispatch پس از merge به master) |
+| APK | ✅ دانلود و verify شد (11520 entry، manifest موجود) |
 
 ## ۱۳) Security reminders (مهم!)
 
