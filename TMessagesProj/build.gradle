@@ -257,7 +257,8 @@ def getProps(String propName) {
         return "";
     }
 }
-apply plugin: 'com.google.gms.google-services'
+// Nabz: google-services plugin disabled (no Firebase project yet; re-enable when wiring FCM push with our own google-services.json)
+// apply plugin: 'com.google.gms.google-services'
 
 task checkVisibility {
     doFirst {
